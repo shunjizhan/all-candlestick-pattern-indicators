@@ -47,6 +47,12 @@ patternLabelPosLow = low - (atr(30) * 0.6)
 patternLabelPosHigh = high + (atr(30) * 0.6)
 
 CandleType = input(title = "Pattern Type", defval="All", options=["Bullish", "Bearish", "Neutral", "All", "Except Neutral"])
+language = input(title = "Language", defval="Both", options=["English", "中文", "English + 中文"])
+
+bullishColor = input(title="Bullish Color", type=input.color, defval=color.green)
+bearishColor = input(title="Bearish Color", type=input.color, defval=color.red)
+neutralColor = input(title="Neutral Color", type=input.color, defval=color.gray)
+textColor = input(title="Text Color", type=input.color, defval=color.white)
 
 AbandonedBabyInput = input(title = "Abandoned Baby", defval=true) 
 DarkCloudCoverInput = input(title = "Dark Cloud Cover", defval=true) 
@@ -90,10 +96,7 @@ var showBearishSignal = (CandleType =="Bearish" or CandleType == "All" or Candle
 var showBullishSignal = (CandleType =="Bullish" or CandleType == "All" or CandleType == "Except Neutral")
 var showNeutralSignal = (CandleType =="Neutral" or CandleType == "All")
 
-var bearishColor = color.red
-var bullishColor = color.green
-var textColor = color.white
-var neutralColor = color.gray
+
 
 bearishLabel(text, tooltip) =>
     label.new(bar_index, patternLabelPosHigh, text = text, style = label.style_label_down, color = bearishColor, textcolor = textColor, tooltip = tooltip)
