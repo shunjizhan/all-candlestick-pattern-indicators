@@ -47,12 +47,27 @@ patternLabelPosLow = low - (atr(30) * 0.6)
 patternLabelPosHigh = high + (atr(30) * 0.6)
 
 CandleType = input(title = "Pattern Type", defval="All", options=["Bullish", "Bearish", "Neutral", "All", "Except Neutral"])
-language = input(title = "Language", defval="Both", options=["English", "中文", "English + 中文"])
+language = input(title = "Language", defval="English + 中文", options=["English", "中文", "English + 中文"])
 
 bullishColor = input(title="Bullish Color", type=input.color, defval=color.green)
 bearishColor = input(title="Bearish Color", type=input.color, defval=color.red)
 neutralColor = input(title="Neutral Color", type=input.color, defval=color.gray)
 textColor = input(title="Text Color", type=input.color, defval=color.white)
+
+labelOptions = array.new_string(1, 'none')
+array.push(labelOptions, 'xcross')
+array.push(labelOptions, 'cross')
+array.push(labelOptions, 'scross')
+array.push(labelOptions, 'scross')
+
+getLabel(name) => 
+    (name == 'none') ? label.style_none : (name == 'xcross') ? label.style_xcross : (name == 'cross') ? label.style_cross : (name == 'triangle up') ? label.style_triangleup : (name == 'triangle down') ? label.style_triangledown : (name == 'flag') ? label.style_flag : (name == 'circle') ? label.style_circle : (name == 'arrow up') ? label.style_arrowup : (name == 'arrow down') ? label.style_arrowdown : (name == 'label up') ? label.style_label_up : (name == 'label down') ? label.style_label_down : (name == 'square') ? label.style_square : label.style_diamond
+
+bullishLabel = getLabel(input(title="Bullish Label", options=['none', 'xcross', 'cross', 'triangle up', 'triangle down', 'flag', 'circle', 'arrow up', 'arrow down', 'label up', 'label down', 'square', 'diamond'], defval='label up'))
+
+bearishLabel = getLabel(input(title="Bearish Label", options=['none', 'xcross', 'cross', 'triangle up', 'triangle down', 'flag', 'circle', 'arrow up', 'arrow down', 'label up', 'label down', 'square', 'diamond'], defval='label down'))
+
+neutralLabel = getLabel(input(title="Neutral Label", options=['none', 'xcross', 'cross', 'triangle up', 'triangle down', 'flag', 'circle', 'arrow up', 'arrow down', 'label up', 'label down', 'square', 'diamond'], defval='label up'))
 
 AbandonedBabyInput = input(title = "Abandoned Baby", defval=true) 
 DarkCloudCoverInput = input(title = "Dark Cloud Cover", defval=true) 
@@ -95,17 +110,13 @@ UpsideTasukiGapInput = input(title = "Upside Tasuki Gap", defval=true)
 var showBearishSignal = (CandleType =="Bearish" or CandleType == "All" or CandleType == "Except Neutral")
 var showBullishSignal = (CandleType =="Bullish" or CandleType == "All" or CandleType == "Except Neutral")
 var showNeutralSignal = (CandleType =="Neutral" or CandleType == "All")
+getBullishLabel(text, tooltip) =>
+    label.new(bar_index, patternLabelPosLow, text = text, style = bullishLabel, color = bullishColor, textcolor = textColor, tooltip = tooltip)
+getBearishLabel(text, tooltip) =>
+    label.new(bar_index, patternLabelPosHigh, text = text, style = bearishLabel, color = bearishColor, textcolor = textColor, tooltip = tooltip)
 
-
-
-bearishLabel(text, tooltip) =>
-    label.new(bar_index, patternLabelPosHigh, text = text, style = label.style_label_down, color = bearishColor, textcolor = textColor, tooltip = tooltip)
-
-bullishLabel(text, tooltip) =>
-    label.new(bar_index, patternLabelPosLow, text = text, style = label.style_label_up, color = bullishColor, textcolor = textColor, tooltip = tooltip)
-
-neutralLabel(text, tooltip) =>
-    label.new(bar_index, patternLabelPosLow, text = text, style = label.style_label_up, color = neutralColor, textcolor = textColor, tooltip = tooltip)
+getNeutralLabel(text, tooltip) =>
+    label.new(bar_index, patternLabelPosLow, text = text, style = neutralLabel, color = neutralColor, textcolor = textColor, tooltip = tooltip)
 
 
 C_OnNeckBearishNumberOfCandles = 2
@@ -115,8 +126,7 @@ if C_DownTrend and C_BlackBody[1] and C_LongBody[1] and C_WhiteBody and open < c
 alertcondition(C_OnNeckBearish, title = "On Neck", message = "New On Neck - Bearish pattern detected.")
 if C_OnNeckBearish and OnNeckInput and showBearishSignal
     var ttBearishOnNeck = "On Neck\nOn Neck is a two-line continuation pattern found in a downtrend. The first candle is long and red, the second candle is short and has a green body. The closing price of the second candle is close or equal to the first candle's low price. The pattern hints at a continuation of a downtrend, and penetrating the low of the green candlestick is sometimes considered a confirmation. "
-    bearishLabel("ON", ttBearishOnNeck)
-
+    getBearishLabel("ON", ttBearishOnNeck)
 
 C_RisingWindowBullishNumberOfCandles = 2
 C_RisingWindowBullish = false
@@ -125,8 +135,7 @@ if C_UpTrend[1] and (C_Range!=0 and C_Range[1]!=0) and low > high[1]
 alertcondition(C_RisingWindowBullish, title = "Rising Window", message = "New Rising Window - Bullish pattern detected.")
 if C_RisingWindowBullish and RisingWindowInput and showBullishSignal
     var ttBullishRisingWindow = "Rising Window\nRising Window is a two-candle bullish continuation pattern that forms during an uptrend. Both candles in the pattern can be of any type with the exception of the Four-Price Doji. The most important characteristic of the pattern is a price gap between the first candle's high and the second candle's low. That gap (window) between two bars signifies support against the selling pressure."
-    bullishLabel("RW", ttBullishRisingWindow)
-
+    getBullishLabel("RW", ttBullishRisingWindow)
 
 C_FallingWindowBearishNumberOfCandles = 2
 C_FallingWindowBearish = false
@@ -135,7 +144,7 @@ if C_DownTrend[1] and (C_Range!=0 and C_Range[1]!=0) and high < low[1]
 alertcondition(C_FallingWindowBearish, title = "Falling Window", message = "New Falling Window - Bearish pattern detected.")
 if C_FallingWindowBearish and FallingWindowInput and showBearishSignal
     var ttBearishFallingWindow = "Falling Window\nFalling Window is a two-candle bearish continuation pattern that forms during a downtrend. Both candles in the pattern can be of any type, with the exception of the Four-Price Doji. The most important characteristic of the pattern is a price gap between the first candle's low and the second candle's high. The existence of this gap (window) means that the bearish trend is expected to continue."
-    bearishLabel("FW", ttBearishFallingWindow)
+    getBearishLabel("FW", ttBearishFallingWindow)
 
 
 C_FallingThreeMethodsBearishNumberOfCandles = 5
@@ -145,7 +154,7 @@ if C_DownTrend[4] and (C_LongBody[4] and C_BlackBody[4]) and (C_SmallBody[3] and
 alertcondition(C_FallingThreeMethodsBearish, title = "Falling Three Methods", message = "New Falling Three Methods - Bearish pattern detected.")
 if C_FallingThreeMethodsBearish and FallingThreeMethodsInput and showBearishSignal
     var ttBearishFallingThreeMethods = "Falling Three Methods\nFalling Three Methods is a five-candle bearish pattern that signifies a continuation of an existing downtrend. The first candle is long and red, followed by three short green candles with bodies inside the range of the first candle. The last candle is also red and long and it closes below the close of the first candle. This decisive fifth strongly bearish candle hints that bulls could not reverse the prior downtrend and that bears have regained control of the market."
-    bearishLabel("FTM", ttBearishFallingThreeMethods)
+    getBearishLabel("FTM", ttBearishFallingThreeMethods)
 
 
 C_RisingThreeMethodsBullishNumberOfCandles = 5
@@ -155,7 +164,7 @@ if C_UpTrend[4] and (C_LongBody[4] and C_WhiteBody[4]) and (C_SmallBody[3] and C
 alertcondition(C_RisingThreeMethodsBullish, title = "Rising Three Methods", message = "New Rising Three Methods - Bullish pattern detected.")
 if C_RisingThreeMethodsBullish and RisingThreeMethodsInput and showBullishSignal
     var ttBullishRisingThreeMethods = "Rising Three Methods\nRising Three Methods is a five-candle bullish pattern that signifies a continuation of an existing uptrend. The first candle is long and green, followed by three short red candles with bodies inside the range of the first candle. The last candle is also green and long and it closes above the close of the first candle. This decisive fifth strongly bullish candle hints that bears could not reverse the prior uptrend and that bulls have regained control of the market."
-    bullishLabel("RTM", ttBullishRisingThreeMethods)
+    getBullishLabel("RTM", ttBullishRisingThreeMethods)
 
 
 C_TweezerTopBearishNumberOfCandles = 2
@@ -165,7 +174,7 @@ if C_UpTrend[1] and (not C_IsDojiBody or (C_HasUpShadow and C_HasDnShadow)) and 
 alertcondition(C_TweezerTopBearish, title = "Tweezer Top", message = "New Tweezer Top - Bearish pattern detected.")
 if C_TweezerTopBearish and TweezerTopInput and showBearishSignal
     var ttBearishTweezerTop = "Tweezer Top\nTweezer Top is a two-candle pattern that signifies a potential bearish reversal. The pattern is found during an uptrend. The first candle is long and green, the second candle is red, and its high is nearly identical to the high of the previous candle. The virtually identical highs, together with the inverted directions, hint that bears might be taking over the market."
-    bearishLabel("TT", ttBearishTweezerTop)
+    getBearishLabel("TT", ttBearishTweezerTop)
 
 
 C_TweezerBottomBullishNumberOfCandles = 2
@@ -175,7 +184,7 @@ if C_UpTrend[1] and (not C_IsDojiBody or (C_HasUpShadow and C_HasDnShadow)) and 
 alertcondition(C_TweezerBottomBullish, title = "Tweezer Bottom", message = "New Tweezer Bottom - Bullish pattern detected.")
 if C_TweezerBottomBullish and TweezerBottomInput and showBullishSignal
     var ttBullishTweezerBottom = "Tweezer Bottom\nTweezer Bottom is a two-candle pattern that signifies a potential bullish reversal. The pattern is found during a downtrend. The first candle is long and red, the second candle is green, its lows nearly identical to the low of the previous candle. The virtually identical lows together with the inverted directions hint that bulls might be taking over the market."
-    bullishLabel("TB", ttBullishTweezerBottom)
+    getBullishLabel("TB", ttBullishTweezerBottom)
 
 
 C_DarkCloudCoverBearishNumberOfCandles = 2
@@ -185,7 +194,7 @@ if (C_UpTrend[1] and C_WhiteBody[1] and C_LongBody[1]) and (C_BlackBody and open
 alertcondition(C_DarkCloudCoverBearish, title = "Dark Cloud Cover", message = "New Dark Cloud Cover - Bearish pattern detected.")
 if C_DarkCloudCoverBearish and DarkCloudCoverInput and showBearishSignal
     var ttBearishDarkCloudCover = "Dark Cloud Cover\nDark Cloud Cover is a two-candle bearish reversal candlestick pattern found in an uptrend. The first candle is green and has a larger than average body. The second candle is red and opens above the high of the prior candle, creating a gap, and then closes below the midpoint of the first candle. The pattern shows a possible shift in the momentum from the upside to the downside, indicating that a reversal might happen soon."
-    bearishLabel("DCC", ttBearishDarkCloudCover)
+    getBearishLabel("DCC", ttBearishDarkCloudCover)
 
 
 C_DownsideTasukiGapBearishNumberOfCandles = 3
@@ -195,7 +204,7 @@ if C_LongBody[2] and C_SmallBody[1] and C_DownTrend and C_BlackBody[2] and C_Bod
 alertcondition(C_DownsideTasukiGapBearish, title = "Downside Tasuki Gap", message = "New Downside Tasuki Gap - Bearish pattern detected.")
 if C_DownsideTasukiGapBearish and DownsideTasukiGapInput and showBearishSignal
     var ttBearishDownsideTasukiGap = "Downside Tasuki Gap\nDownside Tasuki Gap is a three-candle pattern found in a downtrend that usually hints at the continuation of the downtrend. The first candle is long and red, followed by a smaller red candle with its opening price that gaps below the body of the previous candle. The third candle is green and it closes inside the gap created by the first two candles, unable to close it fully. The bull’s inability to close that gap hints that the downtrend might continue."
-    bearishLabel("DTG", ttBearishDownsideTasukiGap)
+    getBearishLabel("DTG", ttBearishDownsideTasukiGap)
 
 
 C_UpsideTasukiGapBullishNumberOfCandles = 3
@@ -205,7 +214,7 @@ if C_LongBody[2] and C_SmallBody[1] and C_UpTrend and C_WhiteBody[2] and C_BodyL
 alertcondition(C_UpsideTasukiGapBullish, title = "Upside Tasuki Gap", message = "New Upside Tasuki Gap - Bullish pattern detected.")
 if C_UpsideTasukiGapBullish and UpsideTasukiGapInput and showBullishSignal
     var ttBullishUpsideTasukiGap = "Upside Tasuki Gap\nUpside Tasuki Gap is a three-candle pattern found in an uptrend that usually hints at the continuation of the uptrend. The first candle is long and green, followed by a smaller green candle with its opening price that gaps above the body of the previous candle. The third candle is red and it closes inside the gap created by the first two candles, unable to close it fully. The bear’s inability to close the gap hints that the uptrend might continue."
-    bullishLabel("UTG", ttBullishUpsideTasukiGap)
+    getBullishLabel("UTG", ttBullishUpsideTasukiGap)
 
 
 C_EveningDojiStarBearishNumberOfCandles = 3
@@ -215,7 +224,7 @@ if C_LongBody[2] and C_IsDojiBody[1] and C_LongBody and C_UpTrend and C_WhiteBod
 alertcondition(C_EveningDojiStarBearish, title = "Evening Doji Star", message = "New Evening Doji Star - Bearish pattern detected.")
 if C_EveningDojiStarBearish and EveningDojiStarInput and showBearishSignal
     var ttBearishEveningDojiStar = "Evening Doji Star\nThis candlestick pattern is a variation of the Evening Star pattern. It is bearish and continues an uptrend with a long-bodied, green candle day. It is then followed by a gap and a Doji candle and concludes with a downward close. The close would be below the first day’s midpoint. It is more bearish than the regular evening star pattern because of the existence of the Doji."
-    bearishLabel("EDS", ttBearishEveningDojiStar)
+    getBearishLabel("EDS", ttBearishEveningDojiStar)
 
 
 C_DojiStarBearishNumberOfCandles = 2
@@ -225,7 +234,7 @@ if C_UpTrend and C_WhiteBody[1] and C_LongBody[1] and C_IsDojiBody and C_BodyLo 
 alertcondition(C_DojiStarBearish, title = "Doji Star", message = "New Doji Star - Bearish pattern detected.")
 if C_DojiStarBearish and DojiStarInput and showBearishSignal
     var ttBearishDojiStar = "Doji Star\nThis is a bearish reversal candlestick pattern that is found in an uptrend and consists of two candles. First comes a long green candle, followed by a Doji candle (except 4-Price Doji) that opens above the body of the first one, creating a gap. It is considered a reversal signal with confirmation during the next trading day."
-    bearishLabel("DS", ttBearishDojiStar)
+    getBearishLabel("DS", ttBearishDojiStar)
 
 
 C_DojiStarBullishNumberOfCandles = 2
@@ -235,7 +244,7 @@ if C_DownTrend and C_BlackBody[1] and C_LongBody[1] and C_IsDojiBody and C_BodyH
 alertcondition(C_DojiStarBullish, title = "Doji Star", message = "New Doji Star - Bullish pattern detected.")
 if C_DojiStarBullish and DojiStarInput and showBullishSignal
     var ttBullishDojiStar = "Doji Star\nThis is a bullish reversal candlestick pattern that is found in a downtrend and consists of two candles. First comes a long red candle, followed by a Doji candle (except 4-Price Doji) that opens below the body of the first one, creating a gap. It is considered a reversal signal with confirmation during the next trading day."
-    bullishLabel("DS", ttBullishDojiStar)
+    getBullishLabel("DS", ttBullishDojiStar)
 
 
 C_MorningDojiStarBullishNumberOfCandles = 3
@@ -245,7 +254,7 @@ if C_LongBody[2] and C_IsDojiBody[1] and C_LongBody and C_DownTrend and C_BlackB
 alertcondition(C_MorningDojiStarBullish, title = "Morning Doji Star", message = "New Morning Doji Star - Bullish pattern detected.")
 if C_MorningDojiStarBullish and MorningDojiStarInput and showBullishSignal
     var ttBullishMorningDojiStar = "Morning Doji Star\nThis candlestick pattern is a variation of the Morning Star pattern. A three-day bullish reversal pattern, which consists of three candlesticks will look something like this: The first being a long-bodied red candle that extends the current downtrend. Next comes a Doji that gaps down on the open. After that comes a long-bodied green candle, which gaps up on the open and closes above the midpoint of the body of the first day. It is more bullish than the regular morning star pattern because of the existence of the Doji."
-    bullishLabel("MDS", ttBullishMorningDojiStar)
+    getBullishLabel("MDS", ttBullishMorningDojiStar)
 
 
 C_PiercingBullishNumberOfCandles = 2
@@ -255,7 +264,7 @@ if (C_DownTrend[1] and C_BlackBody[1] and C_LongBody[1]) and (C_WhiteBody and op
 alertcondition(C_PiercingBullish, title = "Piercing", message = "New Piercing - Bullish pattern detected.")
 if C_PiercingBullish and PiercingInput and showBullishSignal
     var ttBullishPiercing = "Piercing\nPiercing is a two-candle bullish reversal candlestick pattern found in a downtrend. The first candle is red and has a larger than average body. The second candle is green and opens below the low of the prior candle, creating a gap, and then closes above the midpoint of the first candle. The pattern shows a possible shift in the momentum from the downside to the upside, indicating that a reversal might happen soon."
-    bullishLabel("P", ttBullishPiercing)
+    getBullishLabel("P", ttBullishPiercing)
 
 
 C_HammerBullishNumberOfCandles = 1
@@ -266,7 +275,7 @@ if C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_
 alertcondition(C_HammerBullish, title = "Hammer", message = "New Hammer - Bullish pattern detected.")
 if C_HammerBullish and HammerInput and showBullishSignal
     var ttBullishHammer = "Hammer\nHammer candlesticks form when a security moves lower after the open, but continues to rally into close above the intraday low. The candlestick that you are left with will look like a square attached to a long stick-like figure. This candlestick is called a Hammer if it happens to form during a decline."
-    bullishLabel("H", ttBullishHammer)
+    getBullishLabel("H", ttBullishHammer)
 
 
 C_HangingManBearishNumberOfCandles = 1
@@ -277,7 +286,7 @@ if C_SmallBody and C_Body > 0 and C_BodyLo > hl2 and C_DnShadow >= C_Factor * C_
 alertcondition(C_HangingManBearish, title = "Hanging Man", message = "New Hanging Man - Bearish pattern detected.")
 if C_HangingManBearish and HangingManInput and showBearishSignal
     var ttBearishHangingMan = "Hanging Man\nWhen a specified security notably moves lower after the open, but continues to rally to close above the intraday low, a Hanging Man candlestick will form. The candlestick will resemble a square, attached to a long stick-like figure. It is referred to as a Hanging Man if the candlestick forms during an advance."
-    bearishLabel("HM", ttBearishHangingMan)
+    getBearishLabel("HM", ttBearishHangingMan)
 
 
 C_ShootingStarBearishNumberOfCandles = 1
@@ -288,7 +297,7 @@ if C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_
 alertcondition(C_ShootingStarBearish, title = "Shooting Star", message = "New Shooting Star - Bearish pattern detected.")
 if C_ShootingStarBearish and ShootingStarInput and showBearishSignal
     var ttBearishShootingStar = "Shooting Star\nThis single day pattern can appear during an uptrend and opens high, while it closes near its open. It trades much higher as well. It is bearish in nature, but looks like an Inverted Hammer."
-    bearishLabel("SS", ttBearishShootingStar)
+    getBearishLabel("SS", ttBearishShootingStar)
 
 
 C_InvertedHammerBullishNumberOfCandles = 1
@@ -299,7 +308,7 @@ if C_SmallBody and C_Body > 0 and C_BodyHi < hl2 and C_UpShadow >= C_Factor * C_
 alertcondition(C_InvertedHammerBullish, title = "Inverted Hammer", message = "New Inverted Hammer - Bullish pattern detected.")
 if C_InvertedHammerBullish and InvertedHammerInput and showBullishSignal
     var ttBullishInvertedHammer = "Inverted Hammer\nIf in a downtrend, then the open is lower. When it eventually trades higher, but closes near its open, it will look like an inverted version of the Hammer Candlestick. This is a one-day bullish reversal pattern."
-    bullishLabel("IH", ttBullishInvertedHammer)
+    getBullishLabel("IH", ttBullishInvertedHammer)
 
 
 C_MorningStarBullishNumberOfCandles = 3
@@ -310,7 +319,7 @@ if C_LongBody[2] and C_SmallBody[1] and C_LongBody
 alertcondition(C_MorningStarBullish, title = "Morning Star", message = "New Morning Star - Bullish pattern detected.")
 if C_MorningStarBullish and MorningStarInput and showBullishSignal
     var ttBullishMorningStar = "Morning Star\nA three-day bullish reversal pattern, which consists of three candlesticks will look something like this: The first being a long-bodied red candle that extends the current downtrend. Next comes a short, middle candle that gaps down on the open. After comes a long-bodied green candle, which gaps up on the open and closes above the midpoint of the body of the first day."
-    bullishLabel("MS", ttBullishMorningStar)
+    getBullishLabel("MS", ttBullishMorningStar)
 
 
 C_EveningStarBearishNumberOfCandles = 3
@@ -321,7 +330,7 @@ if C_LongBody[2] and C_SmallBody[1] and C_LongBody
 alertcondition(C_EveningStarBearish, title = "Evening Star", message = "New Evening Star - Bearish pattern detected.")
 if C_EveningStarBearish and EveningStarInput and showBearishSignal
     var ttBearishEveningStar = "Evening Star\nThis candlestick pattern is bearish and continues an uptrend with a long-bodied, green candle day. It is then followed by a gapped and small-bodied candle day, and concludes with a downward close. The close would be below the first day’s midpoint."
-    bearishLabel("ES", ttBearishEveningStar)
+    getBearishLabel("ES", ttBearishEveningStar)
 
 
 C_MarubozuWhiteBullishNumberOfCandles = 1
@@ -330,7 +339,7 @@ C_MarubozuWhiteBullish = C_WhiteBody and C_LongBody and C_UpShadow <= C_Marubozu
 alertcondition(C_MarubozuWhiteBullish, title = "Marubozu White", message = "New Marubozu White - Bullish pattern detected.")
 if C_MarubozuWhiteBullish and MarubozuWhiteInput and showBullishSignal
     var ttBullishMarubozuWhite = "Marubozu White\nA Marubozu White Candle is a candlestick that does not have a shadow that extends from its candle body at either the open or the close. Marubozu is Japanese for “close-cropped” or “close-cut.” Other sources may call it a Bald or Shaven Head Candle."
-    bullishLabel("MW", ttBullishMarubozuWhite)
+    getBullishLabel("MW", ttBullishMarubozuWhite)
 
 
 C_MarubozuBlackBearishNumberOfCandles = 1
@@ -339,7 +348,7 @@ C_MarubozuBlackBearish = C_BlackBody and C_LongBody and C_UpShadow <= C_Marubozu
 alertcondition(C_MarubozuBlackBearish, title = "Marubozu Black", message = "New Marubozu Black - Bearish pattern detected.")
 if C_MarubozuBlackBearish and MarubozuBlackInput and showBearishSignal
     var ttBearishMarubozuBlack = "Marubozu Black\nThis is a candlestick that has no shadow, which extends from the red-bodied candle at the open, the close, or even at both. In Japanese, the name means “close-cropped” or “close-cut.” The candlestick can also be referred to as Bald or Shaven Head."
-    bearishLabel("MB", ttBearishMarubozuBlack)
+    getBearishLabel("MB", ttBearishMarubozuBlack)
 
 
 C_DojiNumberOfCandles = 1
@@ -348,7 +357,7 @@ C_GravestoneDojiOne = C_IsDojiBody and C_DnShadow <= C_Body
 alertcondition(C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne, title = "Doji", message = "New Doji pattern detected.")
 if C_Doji and not C_DragonflyDoji and not C_GravestoneDojiOne and DojiInput and showNeutralSignal
     var ttDoji = "Doji\nWhen the open and close of a security are essentially equal to each other, a doji candle forms. The length of both upper and lower shadows may vary, causing the candlestick you are left with to either resemble a cross, an inverted cross, or a plus sign. Doji candles show the playout of buyer-seller indecision in a tug-of-war of sorts. As price moves either above or below the opening level during the session, the close is either at or near the opening level."
-    neutralLabel("D", ttDoji)
+    getNeutralLabel("D", ttDoji)
 
 
 C_GravestoneDojiBearishNumberOfCandles = 1
@@ -356,7 +365,7 @@ C_GravestoneDojiBearish = C_IsDojiBody and C_DnShadow <= C_Body
 alertcondition(C_GravestoneDojiBearish, title = "Gravestone Doji", message = "New Gravestone Doji - Bearish pattern detected.")
 if C_GravestoneDojiBearish and GravestoneDojiInput and showBearishSignal
     var ttBearishGravestoneDoji = "Gravestone Doji\nWhen a doji is at or is close to the day’s low point, a doji line will develop."
-    bearishLabel("GD", ttBearishGravestoneDoji)
+    getBearishLabel("GD", ttBearishGravestoneDoji)
 
 
 C_DragonflyDojiBullishNumberOfCandles = 1
@@ -364,7 +373,7 @@ C_DragonflyDojiBullish = C_IsDojiBody and C_UpShadow <= C_Body
 alertcondition(C_DragonflyDojiBullish, title = "Dragonfly Doji", message = "New Dragonfly Doji - Bullish pattern detected.")
 if C_DragonflyDojiBullish and DragonflyDojiInput and showBullishSignal
     var ttBullishDragonflyDoji = "Dragonfly Doji\nSimilar to other Doji days, this particular Doji also regularly appears at pivotal market moments. This is a specific Doji where both the open and close price are at the high of a given day."
-    bullishLabel("DD", ttBullishDragonflyDoji)
+    getBullishLabel("DD", ttBullishDragonflyDoji)
 
 
 C_HaramiCrossBullishNumberOfCandles = 2
@@ -372,7 +381,7 @@ C_HaramiCrossBullish = C_LongBody[1] and C_BlackBody[1] and C_DownTrend[1] and C
 alertcondition(C_HaramiCrossBullish, title = "Harami Cross", message = "New Harami Cross - Bullish pattern detected.")
 if C_HaramiCrossBullish and HaramiCrossInput and showBullishSignal
     var ttBullishHaramiCross = "Harami Cross\nThis candlestick pattern is a variation of the Harami Bullish pattern. It is found during a downtrend. The two-day candlestick pattern consists of a Doji candle that is entirely encompassed within the body of what was once a red-bodied candle."
-    bullishLabel("HC", ttBullishHaramiCross)
+    getBullishLabel("HC", ttBullishHaramiCross)
 
 
 C_HaramiCrossBearishNumberOfCandles = 2
@@ -380,7 +389,7 @@ C_HaramiCrossBearish = C_LongBody[1] and C_WhiteBody[1] and C_UpTrend[1] and C_I
 alertcondition(C_HaramiCrossBearish, title = "Harami Cross", message = "New Harami Cross - Bearish pattern detected.")
 if C_HaramiCrossBearish and HaramiCrossInput and showBearishSignal
     var ttBearishHaramiCross = "Harami Cross\nThis candlestick pattern is a variation of the Harami Bearish pattern. It is found during an uptrend. This is a two-day candlestick pattern with a Doji candle that is entirely encompassed within the body that was once a green-bodied candle. The Doji shows that some indecision has entered the minds of sellers, and the pattern hints that the trend might reverse."
-    bearishLabel("HC", ttBearishHaramiCross)
+    getBearishLabel("HC", ttBearishHaramiCross)
 
 
 C_HaramiBullishNumberOfCandles = 2
@@ -388,7 +397,7 @@ C_HaramiBullish = C_LongBody[1] and C_BlackBody[1] and C_DownTrend[1] and C_Whit
 alertcondition(C_HaramiBullish, title = "Harami", message = "New Harami - Bullish pattern detected.")
 if C_HaramiBullish and HaramiInput and showBullishSignal
     var ttBullishHarami = "Harami\nThis two-day candlestick pattern consists of a small-bodied green candle that is entirely encompassed within the body of what was once a red-bodied candle."
-    bullishLabel("BH", ttBullishHarami)
+    getBullishLabel("BH", ttBullishHarami)
 
 
 C_HaramiBearishNumberOfCandles = 2
@@ -396,7 +405,7 @@ C_HaramiBearish = C_LongBody[1] and C_WhiteBody[1] and C_UpTrend[1] and C_BlackB
 alertcondition(C_HaramiBearish, title = "Harami", message = "New Harami - Bearish pattern detected.")
 if C_HaramiBearish and HaramiInput and showBearishSignal
     var ttBearishHarami = "Harami\nThis is a two-day candlestick pattern with a small, red-bodied candle that is entirely encompassed within the body that was once a green-bodied candle."
-    bearishLabel("BH", ttBearishHarami)
+    getBearishLabel("BH", ttBearishHarami)
 
 
 C_LongLowerShadowBullishNumberOfCandles = 1
@@ -405,7 +414,7 @@ C_LongLowerShadowBullish = C_DnShadow > C_Range/100*C_LongLowerShadowPercent
 alertcondition(C_LongLowerShadowBullish, title = "Long Lower Shadow", message = "New Long Lower Shadow - Bullish pattern detected.")
 if C_LongLowerShadowBullish and LongLowerShadowInput and showBullishSignal
     var ttBullishLongLowerShadow = "Long Lower Shadow\nTo indicate seller domination of the first part of a session, candlesticks will present with long lower shadows and short upper shadows, consequently lowering prices."
-    bullishLabel("LLS", ttBullishLongLowerShadow)
+    getBullishLabel("LLS", ttBullishLongLowerShadow)
 
 
 C_LongUpperShadowBearishNumberOfCandles = 1
@@ -414,7 +423,7 @@ C_LongUpperShadowBearish = C_UpShadow > C_Range/100*C_LongShadowPercent
 alertcondition(C_LongUpperShadowBearish, title = "Long Upper Shadow", message = "New Long Upper Shadow - Bearish pattern detected.")
 if C_LongUpperShadowBearish and LongUpperShadowInput and showBearishSignal
     var ttBearishLongUpperShadow = "Long Upper Shadow\nTo indicate buyer domination of the first part of a session, candlesticks will present with long upper shadows, as well as short lower shadows, consequently raising bidding prices."
-    bearishLabel("LUS", ttBearishLongUpperShadow)
+    getBearishLabel("LUS", ttBearishLongUpperShadow)
 
 
 C_SpinningTopWhiteNumberOfCandles = 1
@@ -424,7 +433,7 @@ C_SpinningTopWhite = C_IsSpinningTopWhite and C_WhiteBody
 alertcondition(C_SpinningTopWhite, title = "Spinning Top White", message = "New Spinning Top White pattern detected.")
 if C_SpinningTopWhite and SpinningTopWhiteInput and showNeutralSignal
     var ttSpinningTopWhite = "Spinning Top White\nWhite spinning tops are candlestick lines that are small, green-bodied, and possess shadows (upper and lower) that end up exceeding the length of candle bodies. They often signal indecision between buyer and seller."
-    neutralLabel("STW", ttSpinningTopWhite)
+    getNeutralLabel("STW", ttSpinningTopWhite)
 
 
 C_SpinningTopBlackNumberOfCandles = 1
@@ -434,7 +443,7 @@ C_SpinningTopBlack = C_IsSpinningTop and C_BlackBody
 alertcondition(C_SpinningTopBlack, title = "Spinning Top Black", message = "New Spinning Top Black pattern detected.")
 if C_SpinningTopBlack and SpinningTopBlackInput and showNeutralSignal
     var ttSpinningTopBlack = "Spinning Top Black\nBlack spinning tops are candlestick lines that are small, red-bodied, and possess shadows (upper and lower) that end up exceeding the length of candle bodies. They often signal indecision."
-    neutralLabel("STB", ttSpinningTopBlack)
+    getNeutralLabel("STB", ttSpinningTopBlack)
 
 
 C_ThreeWhiteSoldiersBullishNumberOfCandles = 3
@@ -447,7 +456,7 @@ if C_LongBody and C_LongBody[1] and C_LongBody[2]
 alertcondition(C_ThreeWhiteSoldiersBullish, title = "Three White Soldiers", message = "New Three White Soldiers - Bullish pattern detected.")
 if C_ThreeWhiteSoldiersBullish and ThreeWhiteSoldiersInput and showBullishSignal
     var ttBullishThreeWhiteSoldiers = "Three White Soldiers\nThis bullish reversal pattern is made up of three long-bodied, green candles in immediate succession. Each one opens within the body before it and the close is near to the daily high."
-    bullishLabel("3WS", ttBullishThreeWhiteSoldiers)
+    getBullishLabel("3WS", ttBullishThreeWhiteSoldiers)
 
 
 C_ThreeBlackCrowsBearishNumberOfCandles = 3
@@ -460,7 +469,7 @@ if C_LongBody and C_LongBody[1] and C_LongBody[2]
 alertcondition(C_ThreeBlackCrowsBearish, title = "Three Black Crows", message = "New Three Black Crows - Bearish pattern detected.")
 if C_ThreeBlackCrowsBearish and ThreeBlackCrowsInput and showBearishSignal
     var ttBearishThreeBlackCrows = "Three Black Crows\nThis is a bearish reversal pattern that consists of three long, red-bodied candles in immediate succession. For each of these candles, each day opens within the body of the day before and closes either at or near its low."
-    bearishLabel("3BC", ttBearishThreeBlackCrows)
+    getBearishLabel("3BC", ttBearishThreeBlackCrows)
 
 
 C_EngulfingBullishNumberOfCandles = 2
@@ -468,7 +477,7 @@ C_EngulfingBullish = C_DownTrend and C_WhiteBody and C_LongBody and C_BlackBody[
 alertcondition(C_EngulfingBullish, title = "Engulfing", message = "New Engulfing - Bullish pattern detected.")
 if C_EngulfingBullish and EngulfingInput and showBullishSignal
     var ttBullishEngulfing = "Engulfing\nAt the end of a given downward trend, there will most likely be a reversal pattern. To distinguish the first day, this candlestick pattern uses a small body, followed by a day where the candle body fully overtakes the body from the day before, and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to completely overtake the range (high to low), rather only the open and the close."
-    bullishLabel("BE", ttBullishEngulfing)
+    getBullishLabel("BE", ttBullishEngulfing)
 
 
 C_EngulfingBearishNumberOfCandles = 2
@@ -476,7 +485,7 @@ C_EngulfingBearish = C_UpTrend and C_BlackBody and C_LongBody and C_WhiteBody[1]
 alertcondition(C_EngulfingBearish, title = "Engulfing", message = "New Engulfing - Bearish pattern detected.")
 if C_EngulfingBearish and EngulfingInput and showBearishSignal
     var ttBearishEngulfing = "Engulfing\nAt the end of a given uptrend, a reversal pattern will most likely appear. During the first day, this candlestick pattern uses a small body. It is then followed by a day where the candle body fully overtakes the body from the day before it and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to fully overtake the range (high to low), rather only the open and the close."
-    bearishLabel("BE", ttBearishEngulfing)
+    getBearishLabel("BE", ttBearishEngulfing)
 
 
 C_AbandonedBabyBullishNumberOfCandles = 3
@@ -484,7 +493,7 @@ C_AbandonedBabyBullish = C_DownTrend[2] and C_BlackBody[2] and C_IsDojiBody[1] a
 alertcondition(C_AbandonedBabyBullish, title = "Abandoned Baby", message = "New Abandoned Baby - Bullish pattern detected.")
 if C_AbandonedBabyBullish and AbandonedBabyInput and showBullishSignal
     var ttBullishAbandonedBaby = "Abandoned Baby\nThis candlestick pattern is quite rare as far as reversal patterns go. The first of the pattern is a large down candle. Next comes a doji candle that gaps below the candle before it. The doji candle is then followed by another candle that opens even higher and swiftly moves to the upside."
-    bullishLabel("AB", ttBullishAbandonedBaby)
+    getBullishLabel("AB", ttBullishAbandonedBaby)
 
 
 C_AbandonedBabyBearishNumberOfCandles = 3
@@ -492,7 +501,7 @@ C_AbandonedBabyBearish = C_UpTrend[2] and C_WhiteBody[2] and C_IsDojiBody[1] and
 alertcondition(C_AbandonedBabyBearish, title = "Abandoned Baby", message = "New Abandoned Baby - Bearish pattern detected.")
 if C_AbandonedBabyBearish and AbandonedBabyInput and showBearishSignal
     var ttBearishAbandonedBaby = "Abandoned Baby\nA bearish abandoned baby is a specific candlestick pattern that often signals a downward reversal trend in terms of security price. It is formed when a gap appears between the lowest price of a doji-like candle and the candlestick of the day before. The earlier candlestick is green, tall, and has small shadows. The doji candle is also tailed by a gap between its lowest price point and the highest price point of the candle that comes next, which is red, tall and also has small shadows. The doji candle shadows must completely gap either below or above the shadows of the first and third day in order to have the abandoned baby pattern effect."
-    bearishLabel("AB", ttBearishAbandonedBaby)
+    getBearishLabel("AB", ttBearishAbandonedBaby)
 
 
 C_TriStarBullishNumberOfCandles = 3
@@ -503,7 +512,7 @@ C_TriStarBullish = C_3DojisBullish and C_DownTrend[2] and C_BodyGapDnBullish[1] 
 alertcondition(C_TriStarBullish, title = "Tri-Star", message = "New Tri-Star - Bullish pattern detected.")
 if C_TriStarBullish and TriStarInput and showBullishSignal
     var ttBullishTriStar = "Tri-Star\nA bullish TriStar candlestick pattern can form when three doji candlesticks materialize in immediate succession at the tail-end of an extended downtrend. The first doji candle marks indecision between bull and bear. The second doji gaps in the direction of the leading trend. The third changes the attitude of the market once the candlestick opens in the direction opposite to the trend. Each doji candle has a shadow, all comparatively shallow, which signify an interim cutback in volatility."
-    bullishLabel("3S", ttBullishTriStar)
+    getBullishLabel("3S", ttBullishTriStar)
 
 
 C_TriStarBearishNumberOfCandles = 3
@@ -514,7 +523,7 @@ C_TriStarBearish = C_3Dojis and C_UpTrend[2] and C_BodyGapUp[1] and C_BodyGapDn
 alertcondition(C_TriStarBearish, title = "Tri-Star", message = "New Tri-Star - Bearish pattern detected.")
 if C_TriStarBearish and TriStarInput and showBearishSignal
     var ttBearishTriStar = "Tri-Star\nThis particular pattern can form when three doji candlesticks appear in immediate succession at the end of an extended uptrend. The first doji candle marks indecision between bull and bear. The second doji gaps in the direction of the leading trend. The third changes the attitude of the market once the candlestick opens in the direction opposite to the trend. Each doji candle has a shadow, all comparatively shallow, which signify an interim cutback in volatility."
-    bearishLabel("3S", ttBearishTriStar)
+    getBearishLabel("3S", ttBearishTriStar)
 
 
 C_KickingBullishNumberOfCandles = 2
@@ -526,7 +535,7 @@ C_KickingBullish = C_MarubozuBlackBullish[1] and C_MarubozuWhiteBullishKicking a
 alertcondition(C_KickingBullish, title = "Kicking", message = "New Kicking - Bullish pattern detected.")
 if C_KickingBullish and KickingInput and showBullishSignal
     var ttBullishKicking = "Kicking\nThe first day candlestick is a bearish marubozu candlestick with next to no upper or lower shadow and where the price opens at the day’s high and closes at the day’s low. The second day is a bullish marubozu pattern, with next to no upper or lower shadow and where the price opens at the day’s low and closes at the day’s high. Additionally, the second day gaps up extensively and opens above the opening price of the day before. This gap or window, as the Japanese call it, lies between day one and day two’s bullish candlesticks."
-    bullishLabel("K", ttBullishKicking)
+    getBullishLabel("K", ttBullishKicking)
 
 
 C_KickingBearishNumberOfCandles = 2
@@ -539,8 +548,7 @@ alertcondition(C_KickingBearish, title = "Kicking", message = "New Kicking - Bea
 if C_KickingBearish and KickingInput and showBearishSignal
     var ttBearishKicking = "Kicking\nA bearish kicking pattern will occur, subsequently signaling a reversal for a new downtrend. The first day candlestick is a bullish marubozu. The second day gaps down extensively and opens below the opening price of the day before. There is a gap between day one and two’s bearish candlesticks."
     label.new(bar_index, patternLabelPosHigh, text="K", style = label.style_label_down, color = bearishColor, textcolor = textColor, tooltip = ttBearishKicking)
-    bearishLabel("K", ttBearishKicking)
-
+    getBearishLabel("K", ttBearishKicking)
     var ttAllCandlestickPatterns = "All Candlestick Patterns\n"
     label.new(bar_index, patternLabelPosLow, text="Collection", style = label.style_label_up, color = neutralColor, textcolor = textColor, tooltip = ttAllCandlestickPatterns)
 
