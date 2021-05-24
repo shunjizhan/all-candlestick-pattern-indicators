@@ -24,21 +24,24 @@ C_ShadowEqualsPercent = 100.0
 C_DojiBodyPercent = 5.0
 C_Factor = 2.0                  // shows the number of times the shadow dominates the candlestick body
 
-C_BodyHi = max(close, open)
-C_BodyLo = min(close, open)
-C_Body = C_BodyHi - C_BodyLo
-C_BodyAvg = ema(C_Body, C_Len)
-C_SmallBody = C_Body < C_BodyAvg
-C_LongBody = C_Body > C_BodyAvg
-C_UpShadow = high - C_BodyHi
-C_DnShadow = C_BodyLo - low
-C_HasUpShadow = C_UpShadow > C_ShadowPercent / 100 * C_Body
-C_HasDnShadow = C_DnShadow > C_ShadowPercent / 100 * C_Body
-C_WhiteBody = open < close
-C_BlackBody = open > close
-C_Range = high-low
+// length and height
+C_BodyHi = max(close, open)             // 实体上部
+C_BodyLo = min(close, open)             // 实体下部
+C_Body = C_BodyHi - C_BodyLo            // 实体长度
+C_BodyMiddle = C_Body / 2 + C_BodyLo    // 实体中部
+C_BodyAvg = ema(C_Body, C_Len)          // 平均实体长度
+C_UpShadow = high - C_BodyHi            // 上影线长度
+C_DnShadow = C_BodyLo - low             // 下影线长度
+C_Range = high-low                      // 最大波动
+
+// bool
+C_SmallBody = C_Body < C_BodyAvg        // 实体长    
+C_LongBody = C_Body > C_BodyAvg         // 实体短
+C_HasUpShadow = C_UpShadow > C_ShadowPercent / 100 * C_Body     // 有上影线
+C_HasDnShadow = C_DnShadow > C_ShadowPercent / 100 * C_Body     // 有下影线
+C_WhiteBody = open < close              // 是阳线
+C_BlackBody = open > close              // 是阴线
 C_IsInsideBar = C_BodyHi[1] > C_BodyHi and C_BodyLo[1] < C_BodyLo
-C_BodyMiddle = C_Body / 2 + C_BodyLo
 C_ShadowEquals = C_UpShadow == C_DnShadow or (abs(C_UpShadow - C_DnShadow) / C_DnShadow * 100) < C_ShadowEqualsPercent and (abs(C_DnShadow - C_UpShadow) / C_UpShadow * 100) < C_ShadowEqualsPercent
 C_IsDojiBody = C_Range > 0 and C_Body <= C_Range * C_DojiBodyPercent / 100
 C_Doji = C_IsDojiBody and C_ShadowEquals
@@ -114,14 +117,18 @@ OnNeckInput = input(title = "On Neck", defval=true)
 var showBearishSignal = (CandleType =="Bearish" or CandleType == "All" or CandleType == "Except Neutral")
 var showBullishSignal = (CandleType =="Bullish" or CandleType == "All" or CandleType == "Except Neutral")
 var showNeutralSignal = (CandleType =="Neutral" or CandleType == "All")
+
 getBullishLabel(text, tooltip) =>
     label.new(bar_index, patternLabelPosLow, text = text, style = bullishLabel, color = bullishColor, textcolor = textColor, tooltip = tooltip)
 getBearishLabel(text, tooltip) =>
     label.new(bar_index, patternLabelPosHigh, text = text, style = bearishLabel, color = bearishColor, textcolor = textColor, tooltip = tooltip)
-
 getNeutralLabel(text, tooltip) =>
     label.new(bar_index, patternLabelPosLow, text = text, style = neutralLabel, color = neutralColor, textcolor = textColor, tooltip = tooltip)
 
+_getBullishLabel(msg_EN, msg_CN, label_EN, label_CN) =>
+    tooltipMsg = language == "English" ? msg_EN : language == "中文" ? msg_CN : msg_EN + '\n\n' + msg_CN
+    labelText = language == "English" ? label_EN : language == "中文" ? label_CN : label_EN + '\n' + label_CN
+    getBullishLabel(labelText, tooltipMsg)
 
 C_OnNeckBearishNumberOfCandles = 2
 C_OnNeckBearish = false
@@ -340,10 +347,15 @@ if C_EveningStarBearish and EveningStarInput and showBearishSignal
 C_MarubozuWhiteBullishNumberOfCandles = 1
 C_MarubozuShadowPercentWhite = 5.0
 C_MarubozuWhiteBullish = C_WhiteBody and C_LongBody and C_UpShadow <= C_MarubozuShadowPercentWhite/100*C_Body and C_DnShadow <= C_MarubozuShadowPercentWhite/100*C_Body and C_WhiteBody
-alertcondition(C_MarubozuWhiteBullish, title = "Marubozu White", message = "New Marubozu White - Bullish pattern detected.")
+alertcondition(C_MarubozuWhiteBullish, title = "Marubozu White 光头光脚阳线", message = "New Marubozu White - Bullish pattern detected.")
 if C_MarubozuWhiteBullish and MarubozuWhiteInput and showBullishSignal
-    var ttBullishMarubozuWhite = "Marubozu White\nA Marubozu White Candle is a candlestick that does not have a shadow that extends from its candle body at either the open or the close. Marubozu is Japanese for “close-cropped” or “close-cut.” Other sources may call it a Bald or Shaven Head Candle."
-    getBullishLabel("MW", ttBullishMarubozuWhite)
+    var msg_EN = "Marubozu White\nA Marubozu White Candle is a candlestick that does not have a shadow that extends from its candle body at either the open or the close. Marubozu is Japanese for “close-cropped” or “close-cut.” Other sources may call it a Bald or Shaven Head Candle."
+    var msg_CN = "光头光脚阳线\n光头光脚阳线就是一根大阳线，干就完了！"
+
+    var label_EN = "MW"
+    var label_CN = "光头光脚阳线"
+
+    _getBullishLabel(msg_EN, msg_CN, label_EN, label_CN)
 
 
 C_MarubozuBlackBearishNumberOfCandles = 1
