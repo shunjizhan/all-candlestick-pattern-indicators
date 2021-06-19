@@ -12,6 +12,18 @@ This is an enhanced version of candlestick pattern indicators in `TradingView`. 
 ✔️ 可以自由选择指标的颜色和形状  
 ⭕ 中文名称！！（WIP）  
 
+## 🚀 Preview
+### Overview
+![all](img/all.png)
+
+### Customization
+![custom](img/custom.png)
+
+### Detailed Explanation
+![text](img/text.png)
+### So Many Options
+![options](img/options.png)
+
 ## 🚀 Usage
 ### import
 1) open tradingview
