@@ -75,6 +75,7 @@ LongLowerShadowInput = input(title = "Long Lower Shadow 长下影线", defval=tr
 UpsideTasukiGapInput = input(title = "Upside Tasuki Gap 旭日东升", defval=true) 
 RisingWindowInput = input(title = "Rising Window 跳空上涨", defval=true) 
 PiercingInput = input(title = "Piercing 曙光初现", defval=true) 
+BullishEngulfingInput = input(title = "Engulfing 上涨吞没", defval=true) 
 TweezerBottomInput = input(title = "Tweezer Bottom 平底", defval=true) 
 
 BullishAbandonedBabyInput = input(title = "Abandoned Baby 看涨弃婴", defval=true) 
@@ -94,6 +95,7 @@ LongUpperShadowInput = input(title = "Long Upper Shadow 长上影线", defval=tr
 DownsideTasukiGapInput = input(title = "Downside Tasuki Gap 倾盆大雨", defval=true) 
 FallingWindowInput = input(title = "Falling Window 跳空下跌", defval=true) 
 DarkCloudCoverInput = input(title = "Dark Cloud Cover 乌云压顶", defval=true) 
+BearishEngulfingInput = input(title = "Engulfing 下跌吞没", defval=true) 
 TweezerTopInput = input(title = "Tweezer Top 平顶", defval=true) 
 
 AbandonedBabyInput = input(title = "Abandoned Baby 弃婴", defval=true) 
@@ -107,7 +109,6 @@ BearishTriStarInput = input(title = "Tri-Star 顶部三星", defval=true)
 // ------------------------- neutral ------------------------- //
 DojiInput = input(title = "Doji 十字线", defval=true) 
 DojiStarInput = input(title = "Doji Star 十字星", defval=true)
-EngulfingInput = input(title = "Engulfing 吞没", defval=true) 
 SpinningTopBlackInput = input(title = "Spinning Top Black 纺锤阴线", defval=true) 
 SpinningTopWhiteInput = input(title = "Spinning Top White 纺锤阳线", defval=true) 
 HaramiCrossInput = input(title = "Harami Cross 十字胎", defval=true) 
@@ -332,7 +333,7 @@ if C_DojiStarBullish and DojiStarInput and showBullishSignal
     var msg_CN = "翻译中……！"
 
     var label_EN = "DS"
-    var label_CN = ""
+    var label_CN = "十字星"
 
     _getBullishLabel(msg_EN, msg_CN, label_EN, label_CN)
 
@@ -679,12 +680,12 @@ if C_ThreeBlackCrowsBearish and ThreeBlackCrowsInput and showBearishSignal
 C_EngulfingBullishNumberOfCandles = 2
 C_EngulfingBullish = C_DownTrend and C_WhiteBody and C_LongBody and C_BlackBody[1] and C_SmallBody[1] and close >= open[1] and open <= close[1] and ( close > open[1] or open < close[1] )
 alertcondition(C_EngulfingBullish, title = "Engulfing", message = "New Engulfing - Bullish pattern detected.")
-if C_EngulfingBullish and EngulfingInput and showBullishSignal
+if C_EngulfingBullish and BullishEngulfingInput and showBullishSignal
     var msg_EN = "Engulfing\nAt the end of a given downward trend, there will most likely be a reversal pattern. To distinguish the first day, this candlestick pattern uses a small body, followed by a day where the candle body fully overtakes the body from the day before, and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to completely overtake the range (high to low), rather only the open and the close."
     var msg_CN = "翻译中……！"
 
     var label_EN = "BE"
-    var label_CN = "吞没"
+    var label_CN = "上涨吞没"
 
     _getBullishLabel(msg_EN, msg_CN, label_EN, label_CN)
 
@@ -692,12 +693,12 @@ if C_EngulfingBullish and EngulfingInput and showBullishSignal
 C_EngulfingBearishNumberOfCandles = 2
 C_EngulfingBearish = C_UpTrend and C_BlackBody and C_LongBody and C_WhiteBody[1] and C_SmallBody[1] and close <= open[1] and open >= close[1] and ( close < open[1] or open > close[1] )
 alertcondition(C_EngulfingBearish, title = "Engulfing", message = "New Engulfing - Bearish pattern detected.")
-if C_EngulfingBearish and EngulfingInput and showBearishSignal
+if C_EngulfingBearish and BearishEngulfingInput and showBearishSignal
     var msg_EN = "Engulfing\nAt the end of a given uptrend, a reversal pattern will most likely appear. During the first day, this candlestick pattern uses a small body. It is then followed by a day where the candle body fully overtakes the body from the day before it and closes in the trend’s opposite direction. Although similar to the outside reversal chart pattern, it is not essential for this pattern to fully overtake the range (high to low), rather only the open and the close."
     var msg_CN = "翻译中……！"
 
     var label_EN = "BE"
-    var label_CN = "吞没"
+    var label_CN = "下跌吞没"
 
     _getBearishLabel(msg_EN, msg_CN, label_EN, label_CN)
 
