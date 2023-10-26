@@ -485,8 +485,8 @@ if C_MarubozuBlackBearish and MarubozuBlackInput and showBearishSignal
     var msg_EN = "Marubozu Black\nThis is a candlestick that has no shadow, which extends from the red-bodied candle at the open, the close, or even at both. In Japanese, the name means “close-cropped” or “close-cut.” The candlestick can also be referred to as Bald or Shaven Head."
     var msg_CN = "翻译中……！"
 
-    var label_EN = "光头光脚阴线"
-    var label_CN = "MB"
+    var label_EN = "MB"
+    var label_CN = "光头光脚阴线"
 
     _getBearishLabel(msg_EN, msg_CN, label_EN, label_CN)
 
